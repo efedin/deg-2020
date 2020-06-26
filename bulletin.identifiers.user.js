@@ -4,8 +4,8 @@
 // @version      0.1
 // @description  Show identifiers of the bulletin
 // @author       Eugene
-// @include      http://*.elec.moscow/*
-// @include      https://*.elec.moscow/*
+// @include      http://elec.moscow/*
+// @include      https://elec.moscow/*
 // @run-at       document-end
 // ==/UserScript==
 
