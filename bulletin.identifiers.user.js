@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Show bulletin identifiers
-// @namespace    Eugene Fedin
+// @namespace    dit-elections-degug-tools
 // @version      0.1
 // @description  Show identifiers of the bulletin
-// @author       Eugene
+// @author       Eugene Fedin
 // @include      http://elec.moscow/*
 // @include      https://elec.moscow/*
 // @run-at       document-end
