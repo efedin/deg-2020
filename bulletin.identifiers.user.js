@@ -42,7 +42,7 @@ choices.each(function() {
 			<br>Encrypted message: ${util.uint8ArrayToHexadecimal(encryptedBox.encryptedMessage)}
 			<br>Nonce: ${util.uint8ArrayToHexadecimal(encryptedBox.nonce)}
 			<br>Encryption public key: ${encryptionKey}
-			<br>Transaction address: ${rawStoreBallotTx}`;
+			<br>Transaction address: ${rawTxHash}`;
 	} catch(e) {
 	}
 });
