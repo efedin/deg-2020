@@ -64,7 +64,7 @@ buttons.on('click', function () {
 
 	$(document).off('click.election');
 	$button.prop('disabled', true).text('Отправка...');
-    let $radios = $('.bulletin__radio');
+	let $radios = $('.bulletin__radio');
 	$radios.prop('disabled', true);
 
 	$.ajax({
