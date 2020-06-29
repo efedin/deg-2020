@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Show bulletin identifiers
 // @namespace    dit-elections-degug-tools
-// @version      0.1
-// @description  Show identifiers of the bulletin
+// @version      1.0
+// @description  Show identifiers of the bulletin, get rid of logging voting actions
 // @author       Eugene Fedin
 // @include      http://elec.moscow/*
 // @include      https://elec.moscow/*
@@ -17,7 +17,10 @@ let encryptionKey = unsafeWindow.ditVotingParams.publicKey;
 let util = unsafeWindow.ditVoting.util;
 let encryptor = unsafeWindow.ditVoting.Cryptor.withRandomKeyPair();
 let guid = $('#guid').val();
-$('.bulletin__header').get(0).innerHTML += `<br>GUID: ${guid}`;
+$('.bulletin__header').get(0).innerHTML += `<br>GUID: ${guid},
+	<br>encryption public key: ${encryptionKey},
+	<br>votingId: ${votingId}`;
+let calculatedData = {};
 
 choices.each(function() {
 	try {
@@ -37,12 +40,60 @@ choices.each(function() {
 			);
 
 		let rawTxHash = signer.getRawTransactionHash(rawStoreBallotTx);
+		calculatedData[choice] = {
+			signer: signer,
+			encryptionKey: encryptionKey,
+			rawStoreBallotTx: rawStoreBallotTx,
+			rawTxHash: rawTxHash
+		};
 
 		$('.bulletin__header').get(0).innerHTML += `<br><br>Option ${choice}
 			<br>Encrypted message: ${util.uint8ArrayToHexadecimal(encryptedBox.encryptedMessage)}
 			<br>Nonce: ${util.uint8ArrayToHexadecimal(encryptedBox.nonce)}
-			<br>Encryption public key: ${encryptionKey}
 			<br>Transaction address: ${rawTxHash}`;
 	} catch(e) {
 	}
+});
+
+let buttons = $('.bulletin__btn');
+buttons.off();
+
+buttons.on('click', function () {
+	let $button = $(this);
+	let choice = parseInt($button.data('value'));
+
+	$(document).off('click.election');
+	$button.prop('disabled', true).text('Отправка...');
+    let $radios = $('.bulletin__radio');
+	$radios.prop('disabled', true);
+
+	$.ajax({
+		url: window.location.origin + '/election/vote',
+		type: 'post',
+		dataType: 'json',
+		data: ({
+			rawStoreBallotTx: calculatedData[choice].rawStoreBallotTx,
+			guid: guid,
+			votingId: votingId,
+			district: districtId,
+			accountAddressBlock: calculatedData[choice].signer.getAccountAddress(),
+			keyVerificationHash: window.ditVoting.Cryptor.getKeyVerificationHash(
+				util.hexadecimalToUint8Array(calculatedData[choice].encryptionKey)
+			),
+			rawTxHash: calculatedData[choice].rawTxHash,
+		}),
+		success: function (data) {
+			if (data.status === 'error') {
+				redirectToUrl('/election/error/?code=' + data.code);
+				return false;
+			}
+			redirectToUrl('/election/success');
+			return true;
+		},
+		error: function (data) {
+			return false;
+		}
+	});
+
+	return true;
 });
